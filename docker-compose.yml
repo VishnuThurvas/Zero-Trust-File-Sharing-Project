@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: secureshare-db
+    environment:
+      POSTGRES_DB: secureshare
+      POSTGRES_USER: secureshare
+      POSTGRES_PASSWORD: SecureShare2024
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U secureshare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [secureshare]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: secureshare-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/secureshare
+      SPRING_DATASOURCE_USERNAME: secureshare
+      SPRING_DATASOURCE_PASSWORD: SecureShare2024
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      APP_JWT_SECRET: ZeroTrustSecureFileSharingPlatform2024VeryLongSecretKeyForHMACSHA512
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks: [secureshare]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: secureshare-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks: [secureshare]
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+networks:
+  secureshare:
+    driver: bridge
