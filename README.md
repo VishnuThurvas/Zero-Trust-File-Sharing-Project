@@ -96,18 +96,3 @@ secure-file-sharing/
 ├── docker-compose.yml
 └── README.md
 ```
-
----
-
-## 🎤 Interview Answer
-
-*"The key innovation in this project is how I handle the RSA private key.
-Instead of giving users a text file — which is terrible practice — I use
-PBKDF2 with 310,000 iterations to derive an AES-256 key from the user's password.
-That key encrypts the private key blob before it ever leaves the browser.
-The server stores only the encrypted blob, salt, and IV — it cannot decrypt files
-even with full database access. On login, the browser re-derives the AES key from
-the password and decrypts the blob locally. The private key lives only in
-browser sessionStorage and clears when the tab closes.
-This is exactly how 1Password and Bitwarden protect their vault keys."*
-"# Zero-Trust-File-Sharing-Project" 
